@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Charades is a fun and challenging number guessing brain game. Improve logic, focus, and speed in this polished HTML5 puzzle game.">
+<meta name="keywords" content="charades game, number guessing game, brain game, puzzle game, logic game, html5 game">
+<title>Charades – Number Guessing Game</title>
+
+<script src="https://game-cdn.poki.com/scripts/v2/poki-sdk.js"></script>
+
+<style>
+:root{
+  --primary:#2563eb;
+  --success:#16a34a;
+  --warning:#facc15;
+  --danger:#dc2626;
+  --bg:#f4f6fb;
+  --card:#ffffff;
+  --muted:#6b7280;
+}
+
+*{
+  box-sizing:border-box;
+  font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+}
+
+body{
+  margin:0;
+  background:linear-gradient(135deg,#eef2ff,#f8fafc);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  animation:fadeIn .8s ease;
+}
+
+/* ===== CARD ===== */
+.card{
+  background:var(--card);
+  width:100%;
+  max-width:520px;
+  padding:30px;
+  border-radius:18px;
+  box-shadow:0 25px 50px rgba(0,0,0,.1);
+  text-align:center;
+  animation:slideUp .7s ease;
+}
+
+/* ===== HEADER ===== */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin-bottom:5px;
+}
+
+.header img{
+  width:52px;
+  animation:float 3s ease-in-out infinite;
+}
+
+h1{
+  margin:0;
+  color:var(--primary);
+  font-size:34px;
+  letter-spacing:.5px;
+}
+
+.subtitle{
+  margin:10px 0 20px;
+  color:var(--muted);
+}
+
+/* ===== STATS ===== */
+.stats{
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
+  margin-bottom:15px;
+}
+
+.badge{
+  background:#eef2ff;
+  padding:6px 12px;
+  border-radius:999px;
+  font-weight:700;
+  color:#1e3a8a;
+  transition:.3s;
+}
+
+#score{color:var(--success);}
+#best{color:#7c3aed;}
+#time{color:#dc2626;}
+
+/* ===== INPUTS ===== */
+select,input{
+  width:100%;
+  padding:12px;
+  font-size:18px;
+  border-radius:12px;
+  border:2px solid #e5e7eb;
+  text-align:center;
+  margin-bottom:12px;
+  transition:.2s;
+}
+
+select:focus,input:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(37,99,235,.15);
+}
+
+/* ===== RESULT TEXT ===== */
+.result{
+  min-height:28px;
+  font-weight:700;
+  margin-bottom:6px;
+  transition:.3s;
+}
+
+.result.success{
+  color:var(--success);
+  animation:successPop .4s ease;
+}
+
+.result.fail{
+  color:var(--danger);
+  animation:shake .4s ease;
+}
+
+.streak{
+  font-size:13px;
+  color:#f97316;
+  font-weight:600;
+  animation:fadeIn .3s ease;
+}
+
+/* ===== BUTTONS ===== */
+.buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:18px;
+}
+
+button{
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-size:15px;
+  cursor:pointer;
+  font-weight:600;
+  transition:.15s ease;
+}
+
+button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.05);
+}
+
+button:active{
+  transform:scale(.97);
+}
+
+.primary{background:var(--primary);color:white;}
+.gray{background:#6b7280;color:white;}
+.warning{background:var(--warning);}
+.danger{background:var(--danger);color:white;}
+
+/* ===== OVERLAYS ===== */
+.pause-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  color:white;
+  font-size:30px;
+  font-weight:800;
+  z-index:10;
+  animation:fadeIn .2s ease;
+}
+
+#loading{
+  position:fixed;
+  inset:0;
+  background:#020617;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  font-weight:800;
+  letter-spacing:.5px;
+  z-index:20;
+  animation:pulse 1.4s infinite;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+@keyframes slideUp{
+  from{transform:translateY(20px);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+
+@keyframes shake{
+  0%{transform:translateX(0)}
+  25%{transform:translateX(-6px)}
+  50%{transform:translateX(6px)}
+  75%{transform:translateX(-6px)}
+  100%{transform:translateX(0)}
+}
+
+@keyframes successPop{
+  0%{transform:scale(.9)}
+  60%{transform:scale(1.15)}
+  100%{transform:scale(1)}
+}
+
+@keyframes pulse{
+  0%,100%{opacity:.6}
+  50%{opacity:1}
+}
+
+@keyframes float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+</style>
+</head>
+
+<body>
+
+<div id="loading">Loading Charades…</div>
+<div class="pause-overlay" id="pauseOverlay">Paused</div>
+
+<div class="card">
+  <div class="header">
+    <img src="Charades_Logo.png">
+    <h1>Charades</h1>
+  </div>
+
+  <div class="subtitle">Smart Number Guessing Game</div>
+
+  <div class="stats">
+    <div class="badge">Score: <span id="score">0</span></div>
+    <div class="badge">Best: <span id="best">0</span></div>
+    <div class="badge">Time: <span id="time">60</span>s</div>
+  </div>
+
+  <select id="difficulty">
+    <option value="easy">Easy (1–50)</option>
+    <option value="medium" selected>Medium (1–100)</option>
+    <option value="hard">Hard (1–200)</option>
+  </select>
+
+  <input id="guess" type="number" placeholder="Enter your guess">
+
+  <div id="result" class="result">Guess the number</div>
+  <div id="streak" class="streak"></div>
+
+  <div class="buttons">
+    <button class="primary" onclick="check()">Check</button>
+    <button class="warning" onclick="hint()">Hint</button>
+    <button class="gray" onclick="restart()">Restart</button>
+    <button class="danger" onclick="pause()">Pause</button>
+  </div>
+</div>
+
+<script>
+let target, range=100, score=0, time=60, combo=0, paused=false, attempts=0;
+let best = localStorage.getItem("charadesBest") || 0;
+let timer = null;
+let gameplayActive = false;
+
+const scoreEl = document.getElementById("score");
+const bestEl = document.getElementById("best");
+const timeEl = document.getElementById("time");
+const result = document.getElementById("result");
+const streak = document.getElementById("streak");
+const overlay = document.getElementById("pauseOverlay");
+const input = document.getElementById("guess");
+const loading = document.getElementById("loading");
+
+bestEl.textContent = best;
+
+/* ===== LOADING ===== */
+requestAnimationFrame(()=>{
+  setTimeout(()=>{
+    PokiSDK.init().then(()=>{
+      PokiSDK.gameLoadingFinished();
+      loading.style.display = "none";
+      startGame();
+    });
+  },300);
+});
+
+/* ===== GAME CORE ===== */
+function startGame(){
+  if(!gameplayActive){
+    PokiSDK.gameplayStart();
+    gameplayActive = true;
+  }
+  setup();
+}
+
+function setup(){
+  clearInterval(timer);
+  paused=false;
+  overlay.style.display="none";
+
+  const diff=document.getElementById("difficulty").value;
+  range=diff==="easy"?50:diff==="hard"?200:100;
+
+  target=Math.floor(Math.random()*range)+1;
+  time=60; combo=0; attempts=0;
+
+  timeEl.textContent=time;
+  result.textContent=`Guess between 1 and ${range}`;
+  result.className="result";
+  streak.textContent="";
+  input.value="";
+  input.focus();
+
+  timer=setInterval(()=>{
+    if(!paused){
+      time--;
+      timeEl.textContent=time;
+      if(time<=0) gameOver();
+    }
+  },1000);
+}
+
+function check(){
+  if(paused) return;
+  const g=parseInt(input.value);
+  if(isNaN(g)||g<1||g>range) return;
+
+  attempts++;
+  if(g===target){
+    combo++;
+    let points=10+combo*5+time;
+    score+=points;
+    scoreEl.textContent=score;
+    result.textContent=`Correct! +${points}`;
+    result.className="result success";
+    streak.textContent=`🔥 Streak x${combo}`;
+    setup();
+  }else{
+    combo=0;
+    result.textContent=g>target?"Too High":"Too Low";
+    result.className="result fail";
+    streak.textContent="";
+  }
+  input.value="";
+}
+
+function hint(){
+  if(paused) return;
+  score=Math.max(0,score-10);
+  scoreEl.textContent=score;
+  result.textContent=`Hint: ${Math.max(1,target-10)} – ${Math.min(range,target+10)}`;
+}
+
+function restart(){
+  clearInterval(timer);
+  score=0;
+  scoreEl.textContent=0;
+
+  if(gameplayActive){
+    PokiSDK.gameplayStop();
+    gameplayActive=false;
+  }
+
+  startGame();
+  PokiSDK.commercialBreak();
+}
+
+function pause(){
+  paused=!paused;
+  overlay.style.display=paused?"flex":"none";
+}
+
+function gameOver(){
+  clearInterval(timer);
+
+  if(score>best){
+    best=score;
+    localStorage.setItem("charadesBest",best);
+    bestEl.textContent=best;
+  }
+
+  gameplayActive=false;
+  PokiSDK.gameplayStop();
+  restart();
+}
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter") check();
+  if(e.key==="r") restart();
+  if(e.key==="p"||e.key==="Escape") pause();
+});
+</script>
+
+</body>
+</html>

@@ -1,2 +1,2 @@
-# Charades
+# Charades-game
 For games!!
